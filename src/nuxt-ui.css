@@ -1,0 +1,63 @@
+/*
+ * @ecsplico/brand/nuxt-ui.css: Skaile brand → Nuxt UI 4 bridge.
+ *
+ * Maps the semantic tokens Nuxt UI components read (--ui-*) onto the Skaile
+ * brand variables from @skaile/brand/theme.css, so every Nuxt UI component
+ * takes the brand palette, radius and light/dark switch with no per-app
+ * overrides. Nuxt UI 4 components use semantic tokens only, so overriding the
+ * semantic set is enough.
+ *
+ * Import AFTER "@nuxt/ui" (equal specificity, source order decides):
+ *   @import "tailwindcss";
+ *   @import "@nuxt/ui";
+ *   @import "@ecsplico/brand/nuxt-ui.css";
+ */
+@import "@skaile/brand/theme.css";
+
+:root,
+.light,
+.dark {
+  --ui-primary: var(--primary);
+  --ui-secondary: var(--secondary);
+  --ui-success: var(--color-success);
+  --ui-warning: var(--color-warning);
+  --ui-error: var(--destructive);
+  --ui-info: var(--color-ai-accent); /* brand has no info colour */
+  --ui-bg: var(--background);
+  --ui-bg-muted: var(--muted);
+  --ui-bg-elevated: var(--card);
+  --ui-bg-accented: var(--accent);
+  --ui-bg-inverted: var(--foreground);
+  --ui-text: var(--foreground);
+  --ui-text-highlighted: var(--foreground);
+  --ui-text-toned: var(--foreground);
+  --ui-text-muted: var(--muted-foreground);
+  --ui-text-dimmed: var(--muted-foreground);
+  --ui-text-inverted: var(--primary-foreground);
+  --ui-border: var(--border);
+  --ui-border-muted: var(--border);
+  --ui-border-accented: var(--input);
+  --ui-border-inverted: var(--foreground);
+  --ui-radius: var(--radius);
+}
+
+/*
+ * `--ui-text-inverted` is the label on every solid colour (`bg-primary`, ...)
+ * AND on solid neutral (`bg-inverted`). Brand keeps the saturated #7300ff
+ * primary with a white label in dark, so the label stays white; only surfaces
+ * on `--ui-bg-inverted` (the light --foreground in dark) take the dark page
+ * colour. Descendants (alert titles, icons) inherit it.
+ */
+.dark .bg-inverted {
+  --ui-text-inverted: var(--background);
+}
+
+/*
+ * #7300ff on the dark page is ~2.3:1, too faint for the text and outlines
+ * Nuxt UI draws in `--ui-primary` (soft/outline badges, active tabs, links).
+ * Brand's dark highlight `--color-primary-bright` (#9b40ff) takes over; a
+ * white label on it stays above 4.5:1.
+ */
+.dark {
+  --ui-primary: var(--color-primary-bright);
+}

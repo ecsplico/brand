@@ -1,0 +1,47 @@
+# Publishes @ecsplico/brand at the version in package.json to npmjs when a
+# `v*` tag is pushed:  git tag v0.1.0 && git push origin v0.1.0
+#
+# npmjs needs the repository secret NPM_TOKEN (a token with publish rights on the
+# @ecsplico scope); the run fails before publishing anything when it is missing.
+name: publish
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Release preconditions (tag = package.json version, NPM_TOKEN set)
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "tag $GITHUB_REF_NAME does not match package.json version $version" >&2
+            exit 1
+          fi
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "secret NPM_TOKEN is missing: a release publishes to npmjs" >&2
+            exit 1
+          fi
+
+      - run: bun install --frozen-lockfile
+      - run: bun test
+
+      - name: Publish to npmjs
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > "$RUNNER_TEMP/npmrc-npmjs"
+          npm publish --access public --userconfig "$RUNNER_TEMP/npmrc-npmjs" --registry https://registry.npmjs.org
