@@ -1,8 +1,10 @@
 # Publishes @ecsplico/brand at the version in package.json to npmjs when a
 # `v*` tag is pushed:  git tag v0.1.0 && git push origin v0.1.0
 #
-# npmjs needs the repository secret NPM_TOKEN (a token with publish rights on the
-# @ecsplico scope); the run fails before publishing anything when it is missing.
+# Trusted publishing: npmjs trusts this workflow file (publish.yml in
+# ecsplico/brand) and the job logs in with GitHub's OIDC token, so no npm
+# secret exists. Renaming this file breaks the trust; set it up again with
+#   npm trust github @ecsplico/brand --file <name>.yml --repository ecsplico/brand --allow-publish
 name: publish
 
 on:
@@ -11,12 +13,11 @@ on:
 
 permissions:
   contents: read
+  id-token: write # OIDC token for npm trusted publishing
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    env:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -24,24 +25,25 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 24 # bundles npm >= 11.5.1, the first with OIDC publish
+          registry-url: https://registry.npmjs.org
 
-      - name: Release preconditions (tag = package.json version, NPM_TOKEN set)
+      - name: Release precondition (tag = package.json version)
         run: |
           version="$(node -p "require('./package.json').version")"
           if [ "v$version" != "$GITHUB_REF_NAME" ]; then
             echo "tag $GITHUB_REF_NAME does not match package.json version $version" >&2
             exit 1
           fi
-          if [ -z "$NPM_TOKEN" ]; then
-            echo "secret NPM_TOKEN is missing: a release publishes to npmjs" >&2
-            exit 1
-          fi
 
       - run: bun install --frozen-lockfile
       - run: bun test
 
-      - name: Publish to npmjs
+      - name: Publish to npmjs (skipped when the version is already there)
         run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > "$RUNNER_TEMP/npmrc-npmjs"
-          npm publish --access public --userconfig "$RUNNER_TEMP/npmrc-npmjs" --registry https://registry.npmjs.org
+          version="$(node -p "require('./package.json').version")"
+          if npm view "@ecsplico/brand@$version" version >/dev/null 2>&1; then
+            echo "@ecsplico/brand@$version is already published"
+            exit 0
+          fi
+          npm publish --access public

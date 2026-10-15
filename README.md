@@ -90,5 +90,5 @@ bun test   # every brand variable the bridge reads must exist in theme.css, ligh
 ## Release
 
 Bump `version` in `package.json`, commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`.
-`.github/workflows/publish.yml` tests and publishes to npmjs (repository secret
-`NPM_TOKEN`, publish rights on the `@ecsplico` scope).
+`.github/workflows/publish.yml` tests and publishes to npmjs through npm trusted
+publishing (GitHub OIDC); the repo holds no npm token.
