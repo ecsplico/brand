@@ -1,7 +1,7 @@
 {
   "name": "@ecsplico/brand",
-  "version": "0.1.0",
-  "description": "Skaile brand → Nuxt UI 4 bridge: maps @skaile/brand/theme.css onto Nuxt UI's --ui-* tokens",
+  "version": "0.2.0",
+  "description": "Nuxt UI 4 themes for ecsplico apps: the Skaile brand bridge (nuxt-ui.css) and the default ecsplico theme (default/*)",
   "license": "MIT",
   "type": "module",
   "repository": {
@@ -10,7 +10,12 @@
   },
   "keywords": ["nuxt-ui", "skaile", "brand", "design-tokens", "css"],
   "exports": {
-    "./nuxt-ui.css": "./src/nuxt-ui.css"
+    "./nuxt-ui.css": "./src/nuxt-ui.css",
+    "./default/nuxt-ui.css": "./src/default/nuxt-ui.css",
+    "./default/app-config": {
+      "types": "./src/default/app-config.d.mts",
+      "default": "./src/default/app-config.mjs"
+    }
   },
   "files": ["src", "!src/**/*.test.ts"],
   "publishConfig": {
@@ -21,6 +26,14 @@
   },
   "dependencies": {
     "@skaile/brand": "^0.6.0"
+  },
+  "peerDependencies": {
+    "@iconify-json/heroicons": "^1.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@iconify-json/heroicons": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/bun": "^1.3.0"

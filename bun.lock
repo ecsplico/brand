@@ -10,6 +10,12 @@
       "devDependencies": {
         "@types/bun": "^1.3.0",
       },
+      "peerDependencies": {
+        "@iconify-json/heroicons": "^1.2.0",
+      },
+      "optionalPeers": [
+        "@iconify-json/heroicons",
+      ],
     },
   },
   "packages": {
